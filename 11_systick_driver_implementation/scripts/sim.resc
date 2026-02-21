@@ -1,0 +1,28 @@
+# --- Renode Script ---
+using sysbus
+mach create "stm32f4"
+
+# Use the 401 platform description (matches your Makefile define)
+machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+
+# Path to your compiled binary
+$bin=@build/firmware.elf
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+# Execute the reset macro to load the binary
+runMacro $reset
+
+# --- Professional Additions ---
+
+# 1. Log whenever the SysTick Handler is hit (optional, but cool)
+# cpu0 AddHook `sysbus GetSymbolAddress "SysTick_Handler"` "log 'Tick!'"
+
+# 2. Start the simulation automatically
+start
+
+echo "Simulation started!"
+echo "To check the tick count, type: sysbus GetSymbolAddress 'g_system_ticks' then read that address."

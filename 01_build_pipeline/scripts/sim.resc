@@ -1,0 +1,17 @@
+# 1. Setup machine
+using sysbus
+mach create "my-machine"
+machine LoadPlatformDescription @platforms/cpus/stm32f40.repl
+
+# 2. Load the ELF (using your specific 'final.elf')
+sysbus LoadELF @build/final.elf
+
+# 3. CRITICAL: Tell the CPU where your vector table is
+# Without this, the CPU looks at 0x0, finds 0, and hangs
+cpu VectorTableOffset 0x08000000
+
+# 4. Trigger a reset so the CPU reads the Vector Table from 0x08000000
+cpu Reset
+
+# 5. Start
+start

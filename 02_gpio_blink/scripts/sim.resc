@@ -1,0 +1,18 @@
+using sysbus
+mach create "stm32f4-machine"
+
+# 1. Load the Generic STM32F4 Platform
+machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+
+# 2. Load your Binary
+sysbus LoadELF @build/final.elf
+
+# 3. THE FIX: Using self.Log instead of Antilog
+sysbus AddWatchpointHook 0x40020014 4 Write "self.Log(LogLevel.Info, 'LED Toggle (PA5): ' + str((value >> 5) & 1))"
+
+# 4. CPU Setup
+cpu VectorTableOffset 0x08000000
+cpu Reset
+
+# 5. Start Simulation
+# start
