@@ -1,0 +1,34 @@
+# Renode Simulation Script (sim.resc)
+# Compatible with Renode 1.16.1
+
+# 1. Load the platform description
+# References the .repl file located in your scripts/ directory 
+using sysbus
+mach create "stm32f4"
+machine LoadPlatformDescription @scripts/stm32f4.repl
+
+# 2. Load the compiled binary from the /build directory
+# Ensure your Makefile PROJECT_NAME matches this filename
+sysbus LoadELF @build/stm32f4_debounce.elf
+
+# 3. Configure the CPU
+# Sets the Vector Table to the start of Flash at 0x08000000 
+cpu VectorTableOffset 0x08000000
+
+# 4. Logging and Debugging
+# Enables logging for the NVIC at 0xE000E000 to see IRQ 6 trigger [cite: 3]
+logLevel 3
+logLevel 0 nvic
+# Optional: Log EXTI transitions for PA0 tracking 
+logLevel 0 exti
+
+# 5. User Helper Commands
+# These lines will print directly to the Renode log/terminal on startup
+echo "--- Simulation Started ---"
+echo "To simulate a button press on PA0, copy and paste these into the Monitor:"
+echo "  sysbus.gpioPortA OnGPIO 0 True"
+echo "  sysbus.gpioPortA OnGPIO 0 False"
+echo "--------------------------"
+
+# 6. Start the simulation
+start
