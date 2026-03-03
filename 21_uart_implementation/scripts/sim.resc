@@ -1,0 +1,49 @@
+# --- Renode Script for STM32F4 UART Driver ---
+
+# 1. Clear the current emulation state
+using sysbus
+mach clear
+
+# 2. Create the machine and load your provided .repl
+mach create "stm32f4_machine"
+machine LoadPlatformDescription @scripts/stm32f4.repl
+
+# 3. Define the binary path 
+# (Ensure your Makefile output name matches this path)
+$bin?=@build/stm32f4_uart_driver.elf
+
+# 4. Setup the Analyzer (Virtual Terminal) for usart1
+# Based on your .repl, usart1 is at 0x40011000
+showAnalyzer usart1
+
+# 5. Define the Reset Macro
+# This loads the ELF and sets the PC to the Reset_Handler
+macro reset
+"""
+    sysbus LoadELF $bin
+    cpu VectorTableOffset 0x08000000
+"""
+
+# 6. Execute the reset macro to prime the CPU
+runMacro $reset
+
+# --- Verification Guide ---
+echo "-------------------------------------------------------"
+echo " PLATFORM LOADED: STM32F407 "
+echo " SRAM: 0x20000000 (256KB) "
+echo " FLASH: 0x08000000 (2MB) "
+echo "-------------------------------------------------------"
+echo " USE THESE COMMANDS IN THE MONITOR TO TEST: "
+echo ""
+echo " 1. Start execution: "
+echo "    s "
+echo ""
+echo " 2. Change to Interrupt Mode (Write 3 to CONFIG_MODE): "
+echo "    sysbus WriteByte 0x20000000 0x03 "
+echo ""
+echo " 3. Change to DMA Mode (Write 7 to CONFIG_MODE): "
+echo "    sysbus WriteByte 0x20000000 0x07 "
+echo ""
+echo " 4. Send text to the board: "
+echo "    usart1 WriteLine \"Hello Board\" "
+echo "-------------------------------------------------------"
