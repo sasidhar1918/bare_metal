@@ -1,0 +1,17 @@
+# Renode Simulation Script (sim.resc)
+using sysbus
+mach create "stm32f4_clock"
+machine LoadPlatformDescription @scripts/stm32f4.repl
+
+sysbus LoadELF @build/stm32f4_clock_tree.elf
+cpu VectorTableOffset 0x08000000
+
+# Enable logging for the RCC peripheral using the correct syntax
+sysbus LogPeripheralAccess sysbus.rcc true
+
+# Set log levels to ensure we see the values
+logLevel 0 sysbus.rcc
+logLevel 0 sysbus.gpioPortD
+
+echo "--- Clock Tree Simulation Started ---"
+start
